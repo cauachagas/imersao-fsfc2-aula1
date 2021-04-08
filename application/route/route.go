@@ -36,16 +36,20 @@ type Position struct {
 // Definindo a estrutura do tipo PartialRoutePosition
 // Representa a resposta em tempo real do pedido
 type PartialRoutePosition struct {
-	ID       string    `json:"routeID"`
-	ClientID string    `json:"clientID"`
+	ID       string    `json:"routeId"`
+	ClientID string    `json:"clientId"`
 	Position []float64 `json:"position"`
 	Finished bool      `json:"finished"`
 }
 
-// "LoadPositions" carrega de um ".txt" as posições e passa para o tipo Position por meio de ponteiro
+func NewRoute() *Route {
+	return &Route{}
+}
+
+// LoadPositions carrega de um ".txt" as posições e passa para o tipo Position por meio de ponteiro
 func (r *Route) LoadPositions() error {
 	if r.ID == "" {
-		return errors.New("route ID not informed")
+		return errors.New("route Id not informed")
 	}
 	f, err := os.Open("destinations/" + r.ID + ".txt")
 	if err != nil {
@@ -79,25 +83,19 @@ func (r *Route) ExportJsonPositions() ([]string, error) {
 	var route PartialRoutePosition
 	var result []string
 	total := len(r.Positions)
-
 	for k, v := range r.Positions {
 		route.ID = r.ID
 		route.ClientID = r.ClientID
 		route.Position = []float64{v.Lat, v.Long}
 		route.Finished = false
 		if total-1 == k {
-			route.ID = r.ID
-			route.ClientID = r.ClientID
-			route.Position = []float64{v.Lat, v.Long}
-			if total-1 == k {
-				route.Finished = true
-			}
-			jsonRoute, err := json.Marshal(route)
-			if err != nil {
-				return nil, err
-			}
-			result = append(result, string(jsonRoute))
+			route.Finished = true
 		}
+		jsonRoute, err := json.Marshal(route)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, string(jsonRoute))
 	}
 	return result, nil
 }
